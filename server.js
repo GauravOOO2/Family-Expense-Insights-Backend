@@ -3,6 +3,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 require('dotenv').config(); // Load environment variables
 
+// Import models
+const Transaction = require('./models/Transaction'); // Transaction model
+
 // Initialize the app
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,6 +29,28 @@ const connectDB = async () => {
 
 // Connect to MongoDB
 connectDB();
+
+// Add Transaction API
+app.post('/api/transactions', async (req, res) => {
+  const { familyId, memberId, transactionDate, category, amount } = req.body;
+
+  try {
+    // Create a new transaction
+    const transaction = new Transaction({
+      familyId,
+      memberId,
+      transactionDate: new Date(transactionDate),
+      category,
+      amount,
+    });
+
+    // Save to MongoDB
+    await transaction.save();
+    res.status(201).json({ message: 'Transaction added successfully!' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to add transaction', details: error.message });
+  }
+});
 
 // Start the server
 app.listen(PORT, () => {
