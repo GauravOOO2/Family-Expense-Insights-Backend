@@ -1,57 +1,70 @@
 const express = require('express');
 const router = express.Router();
 const Transaction = require('../models/Transaction'); // Import the Transaction model
+const MemberContribution = require('../models/MemberContribution'); // Import the Member Contribution model
+const SavingsOptimization = require('../models/SavingsOptimization'); // Import the Savings Optimization model
+
 
 // Endpoint: Member Contribution Analysis
-router.post('/member-contribution', (req, res) => {
-  try {
-    const { transactions } = req.body;
-
-    if (!transactions || !Array.isArray(transactions) || transactions.length === 0) {
-      return res.status(400).json({ message: 'Invalid or missing transactions data.' });
+router.post('/member-contribution', async (req, res) => {
+    try {
+      const { transactions } = req.body;
+  
+      if (!transactions || !Array.isArray(transactions) || transactions.length === 0) {
+        return res.status(400).json({ message: 'Invalid or missing transactions data.' });
+      }
+  
+      // Calculate total family expenses
+      const totalExpenses = transactions.reduce((sum, txn) => sum + txn.amount, 0);
+  
+      // Calculate each member's contribution
+      const memberContributions = {};
+      transactions.forEach((txn) => {
+        if (!memberContributions[txn.memberId]) {
+          memberContributions[txn.memberId] = 0;
+        }
+        memberContributions[txn.memberId] += txn.amount;
+      });
+  
+      // Calculate percentages and find the highest spender
+      let highestSpender = { memberId: null, amount: 0 };
+      const memberPercentages = Object.keys(memberContributions).map((memberId) => {
+        const contribution = memberContributions[memberId];
+        if (contribution > highestSpender.amount) {
+          highestSpender = { memberId, amount: contribution };
+        }
+        return {
+          memberId,
+          contribution,
+          percentage: ((contribution / totalExpenses) * 100).toFixed(2),
+        };
+      });
+  
+      // Save member contribution analysis in MongoDB
+      const newMemberContribution = new MemberContribution({
+        totalExpenses,
+        memberPercentages,
+        highestSpender,
+      });
+      await newMemberContribution.save();
+  
+      // Response data
+      res.json({
+        totalExpenses,
+        memberPercentages,
+        highestSpender,
+        message: 'Member contribution analysis saved successfully!'
+      });
+    } catch (error) {
+      console.error('Error analyzing member contributions:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
-
-    // Calculate total family expenses
-    const totalExpenses = transactions.reduce((sum, txn) => sum + txn.amount, 0);
-
-    // Calculate each member's contribution
-    const memberContributions = {};
-    transactions.forEach((txn) => {
-      if (!memberContributions[txn.memberId]) {
-        memberContributions[txn.memberId] = 0;
-      }
-      memberContributions[txn.memberId] += txn.amount;
-    });
-
-    // Calculate percentages and find the highest spender
-    let highestSpender = { memberId: null, amount: 0 };
-    const memberPercentages = Object.keys(memberContributions).map((memberId) => {
-      const contribution = memberContributions[memberId];
-      if (contribution > highestSpender.amount) {
-        highestSpender = { memberId, amount: contribution };
-      }
-      return {
-        memberId,
-        contribution,
-        percentage: ((contribution / totalExpenses) * 100).toFixed(2), // Rounded to 2 decimal places
-      };
-    });
-
-    // Response data
-    res.json({
-      totalExpenses,
-      memberPercentages,
-      highestSpender,
-    });
-  } catch (error) {
-    console.error('Error analyzing member contributions:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
+  });
+  
 
 
 // Endpoint: Savings Optimization Logic
-router.post('/savings-optimization', (req, res) => {
+router.post('/savings-optimization', async (req, res) => {
     try {
       const { familyIncome, savings, totalExpenses, dependents, monthlyExpenses } = req.body;
   
@@ -87,6 +100,20 @@ router.post('/savings-optimization', (req, res) => {
           ? 'underspending'
           : 'balanced';
   
+      // Save savings optimization data in MongoDB
+      const newSavingsOptimization = new SavingsOptimization({
+        familyIncome,
+        savings,
+        totalExpenses,
+        dependents,
+        monthlyExpenses,
+        suggestedSavingPercentage,
+        idealExpenseToIncomeRatio: (idealRatio * 100).toFixed(2) + '%',
+        currentExpenseToIncomeRatio: (currentRatio * 100).toFixed(2) + '%',
+        spendingStatus,
+      });
+      await newSavingsOptimization.save();
+  
       // Response
       res.json({
         familyIncome,
@@ -96,6 +123,7 @@ router.post('/savings-optimization', (req, res) => {
         idealExpenseToIncomeRatio: (idealRatio * 100).toFixed(2) + '%',
         currentExpenseToIncomeRatio: (currentRatio * 100).toFixed(2) + '%',
         spendingStatus,
+        message: 'Savings optimization saved successfully!',
       });
     } catch (error) {
       console.error('Error in savings optimization logic:', error);
