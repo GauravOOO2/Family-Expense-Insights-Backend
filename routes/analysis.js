@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const MemberContribution = require('../models/MemberContribution'); // Import model
+const Transaction = require('../models/Transaction'); // Import the Transaction model
 
 // Endpoint: Member Contribution Analysis
 router.post('/member-contribution', (req, res) => {
@@ -103,11 +103,10 @@ router.post('/savings-optimization', (req, res) => {
     }
   });
   
-
-  const Transaction = require('../models/Transaction'); // Import the Transaction model
+  
 
   // Endpoint: Add Transaction
-  router.post('/add-transaction', async (req, res) => {
+router.post('/add-transaction', async (req, res) => {
     try {
       const { familyId, memberId, category, amount, transactionDate } = req.body;
   
@@ -136,7 +135,7 @@ router.post('/savings-optimization', (req, res) => {
       res.status(500).json({ message: 'Internal server error' });
     }
   });
-  
+
 
 
 module.exports = router;

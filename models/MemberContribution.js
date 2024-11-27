@@ -1,19 +1,18 @@
 const mongoose = require('mongoose');
 
+// Define schema for Member Contribution
 const memberContributionSchema = new mongoose.Schema({
-  familyId: String,
-  totalFamilyExpenses: Number,
-  memberContributions: [
-    {
-      memberId: String,
-      contribution: Number,
-      percentage: String,
-    },
-  ],
+  totalExpenses: { type: Number, required: true },
+  memberPercentages: [{
+    memberId: { type: String, required: true },
+    contribution: { type: Number, required: true },
+    percentage: { type: String, required: true },
+  }],
   highestSpender: {
-    memberId: String,
-    amount: Number,
-  },
-});
+    memberId: { type: String, required: true },
+    amount: { type: Number, required: true }
+  }
+}, { timestamps: true });
 
-module.exports = mongoose.model('MemberContribution', memberContributionSchema, 'memberContributions');
+const MemberContribution = mongoose.model('MemberContribution', memberContributionSchema);
+module.exports = MemberContribution;
