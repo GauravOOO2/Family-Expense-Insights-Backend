@@ -1,3 +1,0 @@
-{"level":"info","message":"MongoDB Connected Successfully","timestamp":"2024-11-26T08:00:51.713Z"}
-{"level":"info","message":"Successfully imported:\n    - 200 unique family metrics\n    - 16306 transactions","timestamp":"2024-11-26T08:01:02.320Z"}
-{"familyMetricsCount":200,"level":"info","message":"Import Complete:","timestamp":"2024-11-26T08:01:02.322Z","transactionsCount":16306}
