@@ -99,7 +99,7 @@ frontend/
 ### Backend:
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/GauravOOO2/Family-Expense-Insights-Backend.git
    cd backend
    ```
 2. Install dependencies:
@@ -122,6 +122,7 @@ frontend/
 ### Frontend:
 1. Navigate to the frontend directory:
    ```bash
+   git clone https://github.com/GauravOOO2/Family-Expense-Insights-Frontend.git
    cd frontend
    ```
 2. Install dependencies:
